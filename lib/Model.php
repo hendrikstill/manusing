@@ -5,6 +5,8 @@
  * @author Hendrik
  * @package Lib
  * @abstract
+ * 
+ * Did something here
  */
 class Model
 {
