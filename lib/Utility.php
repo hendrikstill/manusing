@@ -18,7 +18,11 @@ class Utility
 	 */
 	public static function buildUrl($controller,$action,$id = "")
 	{
-		return "./index.php?controller=$controller&action=$action&id=$id";
+		$string = "./index.php?controller=$controller&action=$action";
+		if(!empty($id)){
+			$string .= "&id=$id";
+		}
+		return $string;
 	}
 
 	/**
@@ -162,6 +166,80 @@ class Utility
 
 	}
 
+	/**
+	 * Converts german formated date to mysql formated date
+	 *
+	 * e.g.: 22.03.2006 -> 2006-03-22
+	 * http://www.selfphp.info/kochbuch/kochbuch.php?code=15
+	 * @param string $date
+	 * @return string mysql date
+	 */
+	public static function date_german2mysql($date) {
+		$d    =    explode(".",$date);
+
+		return    sprintf("%04d-%02d-%02d", $d[2], $d[1], $d[0]);
+	}
+
+	/**
+	 * Converts mysql formated date to german formated date
+	 *
+	 * e.g.: 2006-03-22 -> 22.03.2006
+	 * http://www.selfphp.info/kochbuch/kochbuch.php?code=15
+	 * @param string $date
+	 * @return string german date
+	 */
+	public static function date_mysql2german($date) {
+		$d    =    explode("-",$date);
+
+		return    sprintf("%02d.%02d.%04d", $d[2], $d[1], $d[0]);
+	}
+
+	/**
+	 * Converts german formated date to mysql formated date
+	 *
+	 * e.g.: 20060322181602 -> 22.03.2006 18:16:02
+	 * http://www.selfphp.info/kochbuch/kochbuch.php?code=15
+	 * @param string $date
+	 * @return int
+	 */
+	function timestamp_german2mysql($date) {
+
+		$split = explode(" ",$date);
+		$timestamp =    sprintf("%04d%02d%02d",
+		substr($split[0], 6, 4),
+		substr($split[0], 3, 2),
+		substr($split[0], 0, 2));
+
+		$timestamp .=    sprintf("%02d%02d%02d",
+		substr($split[1], 0, 2),
+		substr($split[1], 3, 2),
+		substr($split[1], 6, 2));
+
+		return $timestamp;
+	}
+
+	/**
+	 * Converts mysql formated date to german formated date
+	 *
+	 * e.g.: 22.03.2006 18:16:02  -> 20060322181602
+	 * http://www.selfphp.info/kochbuch/kochbuch.php?code=15
+	 * @param int $date
+	 * @return string
+	 */
+	function timestamp_mysql2german($date) {
+
+		$stamp['date']    =    sprintf("%02d.%02d.%04d",
+		substr($date, 6, 2),
+		substr($date, 4, 2),
+		substr($date, 0, 4));
+
+		$stamp['time']    =    sprintf("%02d:%02d:%02d",
+		substr($date, 8, 2),
+		substr($date, 10, 2),
+		substr($date, 12, 2));
+
+		return $stamp;
+	}
 
 }
 ###

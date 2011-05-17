@@ -1,5 +1,5 @@
 <?php
-require_once('./lib/Classloader.php');
+require_once(dirname(__FILE__).'/Classloader.php');
 
 /**
  * @author Hendrik

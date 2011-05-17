@@ -29,15 +29,16 @@ class Classloader
 	 */
 	public function initLoadLib()
 	{
-		$this->loadClass('./config.php');
-		$this->loadClass('./lib/DataConnector.php');
-		$this->loadClass('./lib/Controller.php');
-		$this->loadClass('./lib/Model.php');
-		$this->loadClass('./lib/RoutingEngine.php');
-		$this->loadClass('./lib/TemplateEngine.php');
-		$this->loadClass('./lib/Log.php');
-		$this->loadClass('./lib/Plugin.php');
-		$this->loadClass('./lib/Utility.php');
+		$this->loadClass(dirname(__FILE__).'/../config.php');
+		$this->loadClass(dirname(__FILE__).'/DataConnector.php');
+		$this->loadClass(dirname(__FILE__).'/Controller.php');
+		$this->loadClass(dirname(__FILE__).'/Model.php');
+		$this->loadClass(dirname(__FILE__).'/RoutingEngine.php');
+		$this->loadClass(dirname(__FILE__).'/TemplateEngine.php');
+		$this->loadClass(dirname(__FILE__).'/FirePHP.php');
+		$this->loadClass(dirname(__FILE__).'/Log.php');
+		$this->loadClass(dirname(__FILE__).'/Plugin.php');
+		$this->loadClass(dirname(__FILE__).'/Utility.php');
 			
 	}
 
@@ -48,7 +49,7 @@ class Classloader
 	public function loadModel ( $modelName='' )
 	{
 		$modelName = ucfirst(strtolower($modelName));
-		$this->loadClass('./model/'.$modelName.'.php');
+		$this->loadClass(dirname(__FILE__).'/../model/'.$modelName.'.php');
 	}
 
 	/**
@@ -60,7 +61,7 @@ class Classloader
 	public function loadController ( $controllerName='' )
 	{
 		$controllerName = ucfirst(strtolower($controllerName));
-		$this->loadClass('./controller/'.$controllerName.'Controller.php');
+		$this->loadClass(dirname(__FILE__).'/../controller/'.$controllerName.'Controller.php');
 			
 	}
 
@@ -71,7 +72,7 @@ class Classloader
 	 */
 	public function loadPlugin ( $pluginName='' )
 	{
-		$this->loadClass('./plugins/'.$pluginName.'/'.$pluginName.'.php');
+		$this->loadClass(dirname(__FILE__).'/../plugins/'.$pluginName.'/'.$pluginName.'.php');
 	}
 
 	/**
@@ -81,7 +82,7 @@ class Classloader
 	public function loadClass ( $className='' )
 	{
 		require_once($className);
-		$loadedClasses[] = $className;
+		$this->loadedClasses[] = $className;
 	}
 
 

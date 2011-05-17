@@ -38,7 +38,6 @@ class DataConnector
 	 */
 	public function endConnection()
 	{
-
 	}
 
 	/**
@@ -68,7 +67,7 @@ class DataConnector
 	 */
 	public function nativQuery ( $query )
 	{
-		//Log::getInstance()->event($query,Log::INFO);
+		Log::getInstance()->event($query.'<br/>',Log::INFO);
 		try{
 			return $this->pdo->query($query);
 		}catch (PDOException $e){
@@ -83,6 +82,16 @@ class DataConnector
 	public function lastInsertId()
 	{
 		return $this->pdo->lastInsertId();
+	}
+	
+	/**
+	* Uses PDO::quote function 
+	* @param string $string
+	* @return string
+	*/
+	public function quote($string)
+	{
+		return $this->pdo->quote($string);
 	}
 	###
 

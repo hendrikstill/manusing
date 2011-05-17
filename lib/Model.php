@@ -5,8 +5,6 @@
  * @author Hendrik
  * @package Lib
  * @abstract
- * 
- * Did something here
  */
 class Model
 {
@@ -20,10 +18,21 @@ class Model
 	###
 
 	/**
+	 * Uses PDO::quote function
+	 */
+	function quote( $string )
+	{
+		return DataConnector::getInstance( )->quote($string);
+	}
+
+	/**
 	 * Creates or updates the instance on the database
 	 */
 	public function save ()
 	{
+		//Calling hook method
+		$this->beforeSave();
+		
 		//Creating model
 		if(!isset($this->id)){
 			$this->create();
@@ -37,6 +46,9 @@ class Model
 	 */
 	public function delete ()
 	{
+		//Calling hook method
+		$this->beforeDelete();
+		
 		$query = 'DELETE FROM '.$this->table.' WHERE id ='.$this->id.';';
 		DataConnector::getInstance()->query($query);
 	}
@@ -46,6 +58,9 @@ class Model
 	 */
 	public function update ()
 	{
+		//Calling hook method
+		$this->beforeUpdate(); 
+		
 		//updates model
 		$notFirst = false;
 		$query = 'UPDATE '.$this->table.' SET ';
@@ -56,7 +71,7 @@ class Model
 			}else{
 				$notFirst = true;
 			}
-			$query .= $attribute[0].' = \''.$this->$attribute[0].'\'';
+			$query .= $attribute[0].' = '.$this->quote($this->$attribute[0]);
 		}
 		$notFirst = false;
 		$query .=' WHERE id = \''.$this->id.'\';';
@@ -68,6 +83,9 @@ class Model
 	 */
 	public function create ()
 	{
+		//Calling hook method
+		$this->beforeCreate();
+		
 		$notFirst = false;
 		$query = 'INSERT INTO '.$this->table.' (';
 		foreach($this->attributes as $attribute){
@@ -89,9 +107,9 @@ class Model
 			}else{
 				$notFirst = true;
 			}
-			if($attribute[0] != 'id')
+			if($attribute[0] != 'id' && isset($this->$attribute[0])) //Attentions
 			{
-				$query .= '\''.$this->$attribute[0].'\'';
+				$query .= $this->quote($this->$attribute[0]);
 			}else{
 				$query .= 'NULL';
 			}
@@ -109,41 +127,91 @@ class Model
 	 */
 	public function find ($id)
 	{
-		$query = 'SELECT * FROM '.$this->table.' WHERE id ='.$id.';';
-		foreach(DataConnector::getInstance()->query($query) as $row){
+		$query = 'SELECT * FROM '.$this->table.' WHERE id ='.DataConnector::getInstance()->quote($id).';';
+		$result = DataConnector::getInstance()->query($query);
+		if($result)
+		{
+			foreach($result as $row){
 
-			foreach($this->attributes as $attribute){
-				$this->{$attribute[0]} = $row[$attribute[0]];
+				foreach($this->attributes as $attribute){
+					$this->{$attribute[0]} = $row[$attribute[0]];
+				}
 			}
+			return $this;
+		}else{
+			return false;
 		}
-		return $this;
 	}
 
 
 	/**
-	 * Returns single model from the database. You can define the where clause by youre selfe.
+	 * Returns single model from the database. You can define the where clause by youre selfe. Returns false incase of null selection
 	 * @param string $where
 	 * @return model
 	 */
 	public function findWhere ( $where )
 	{
 		$query = 'SELECT * FROM '.$this->table.' WHERE '.$where.' LIMIT 1;';
-		foreach(DataConnector::getInstance()->query($query) as $row){
+		$result = DataConnector::getInstance()->query($query);
+		if($result)
+		{
+			foreach($result as $row){
 
-			foreach($this->attributes as $attribute){
-				$this->{$attribute[0]} = $row[$attribute[0]];
+				foreach($this->attributes as $attribute){
+					$this->{$attribute[0]} = $row[$attribute[0]];
+				}
 			}
+			return $this;
+		}else{
+			return false;
 		}
-		return $this;
 	}
 
 	/**
-	 * Returns numbers of models in the database 
+	 * Returns an array of all models from the Database which match the query
+	 * Be patiant with the security of this query
+	 * @return array of models
+	 */
+	public function findWithSQL ( $query )
+	{
+		$className = get_class($this);
+		if($result)
+		{
+			foreach($result as $row){
+				$element = new $className();
+
+				foreach($this->attributes as $attribute){
+					$element->{$attribute[0]} = $row[$attribute[0]];
+				}
+				$elements[$i] = $element;
+				$i++;
+			}
+			return $elements;
+		}else{
+			return array();
+		}
+
+	}
+
+	/**
+	 * Returns numbers of models in the database
 	 */
 	public function count ()
 	{
-		$query = '';
-		return 0;
+		$query = 'SELECT COUNT( * ) FROM  '.$this->table;
+
+		$result = DataConnector::getInstance()->query($query);
+		if($result)
+		{
+			foreach($result as $row){
+
+				$count = $row[0];
+			}
+			return $count;
+		}else{
+			return 0;
+		}
+
 	}
 
 	/**
@@ -154,16 +222,23 @@ class Model
 	{
 		$className = get_class($this);
 		$query = 'SELECT * FROM '.$this->table.';';
-		foreach(DataConnector::getInstance()->query($query) as $row){
-			$element = new $className();
-				
-			foreach($this->attributes as $attribute){
-				$element->{$attribute[0]} = $row[$attribute[0]];
+		$result = DataConnector::getInstance()->query($query);
+		$i = 0;
+		if($result)
+		{
+			foreach($result as $row){
+				$element = new $className();
+
+				foreach($this->attributes as $attribute){
+					$element->{$attribute[0]} = $row[$attribute[0]];
+				}
+				$elements[$i] = $element;
+				$i++;
 			}
-			$elements[$i] = $element;
-			$i++;
+			return $elements;
+		}else{
+			return array();
 		}
-		return $elements;
 	}
 
 	/**
@@ -175,16 +250,22 @@ class Model
 	{
 		$className = get_class($this);
 		$query = 'SELECT * FROM '.$this->table.' WHERE '.$where.';';
-		foreach(DataConnector::getInstance()->query($query) as $row){
-			$element = new $className();
-				
-			foreach($this->attributes as $attribute){
-				$element->{$attribute[0]} = $row[$attribute[0]];
+		$result = DataConnector::getInstance()->query($query);
+		if($result && $result->rowCount() > 0) //Check if we get a result
+		{
+			foreach($result as $row){
+				$element = new $className();
+
+				foreach($this->attributes as $attribute){
+					$element->{$attribute[0]} = $row[$attribute[0]];
+				}
+				$elements[$i] = $element;
+				$i++;
 			}
-			$elements[$i] = $element;
-			$i++;
+			return $elements;
+		}else{
+			return false;
 		}
-		return $elements;
 	}
 
 	/**
@@ -219,14 +300,45 @@ class Model
 		return ucfirst($name);
 	}
 	/**
-	*returns all attributes as an array.
-	*@return array
- 	*/
+	 *returns all attributes as an array.
+	 *@return array
+	 */
 	public function getAttributes ()
 	{
 		return $this->attributes;
 	}
 
+	
+	/**
+	 * a hook method witch is called before every save to the persistence layer
+	 * Overlode this.
+	 */
+	public function beforeSave(){
+		//
+	}
+	/**
+	 * a hook method witch is called before every update to the persistence layer
+	 * Overlode this.
+	 */
+	public function beforeUpdate(){
+		
+	}
+	
+	/**
+	 * a hook method witch is called before every create of element to the persistence layer
+	 * Overlode this.
+	 */
+	public function beforeCreate(){
+		
+	}
+	
+	/**
+	 * a hook method witch is called before every delete of element to the persistence layer
+	 * Overlode this.
+	 */
+	public function beforeDelete(){
+		
+	}
 
 
 }

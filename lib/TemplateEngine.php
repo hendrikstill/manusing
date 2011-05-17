@@ -32,7 +32,7 @@ class TemplateEngine
 	{
 		$this->design = file_get_contents(DESIGN_PATH);
 	}
-	
+
 	/**
 	 *  Writes just the String {content} as design.
 	 *  This is usefull if you want render just the view without the design template
@@ -56,12 +56,21 @@ class TemplateEngine
 	public function getViewContent($controller,$view)
 	{
 		$controller = ucfirst($controller);
-		return file_get_contents('./views/'.$controller.'/'.$view.'.html');
+		return file_get_contents(VIEWS_DIR.$controller.'/'.$view.'.html');
 	}
 
 	public function setTitle ($title)
 	{
 		$this->replaceMarks('title',$title);
+	}
+
+	public function isMarkSet($mark)
+	{
+		if(empty($this->marks[$mark])){
+			return false;
+		}else{
+			return true;
+		}
 	}
 
 	public function flash ($text)
@@ -86,7 +95,9 @@ class TemplateEngine
 		}
 			
 		//Adding Flashes and the content view
-		$this->replaceMarks('flash',$session['flash']);
+		if(isset($session['flash'])){
+			$this->replaceMarks('flash',$session['flash']);
+		}
 		$this->replaceMarks('content',$this->view);
 			
 		//Replacing all marks with values
@@ -96,7 +107,7 @@ class TemplateEngine
 		}
 		eval('?>'.$this->design.'<?');
 	}
-		
+
 }
 ###
 

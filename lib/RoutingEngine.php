@@ -70,15 +70,18 @@ class RoutingEngine
 	 */
 	public function getParameters()
 	{
-		$this->controller = $_GET['controller'];
-		$this->action = $_GET['action'];
 		if(!isset($_GET['controller']))
 		{
 			$this->controller = DEFAULT_CONTROLLER;
+		}else{
+			$this->controller = $_GET['controller'];
 		}
+		
 		if(!isset($_GET['action']))
 		{
 			$this->action = DEFAULT_ACTION;
+		}else{
+			$this->action = $_GET['action'];		
 		}
 			
 	}

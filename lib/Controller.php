@@ -24,7 +24,7 @@ class Controller
 	 * e.g.:
 	 * $this->useModel('Post');
 	 * $this->post->doSomePostThings();
-	 * 
+	 *
 	 * @param string $modelName
 	 */
 	public function useModel ( $modelName )
@@ -63,7 +63,7 @@ class Controller
 	 */
 	public function render ( $view = 'index' )
 	{
-		
+
 		switch ($this->renderType)
 		{
 			case 'part':
@@ -104,7 +104,7 @@ class Controller
 
 		echo $json_string;
 	}
-	
+
 	/**
 	 * Renders just the view instead of the full design + the view.
 	 * Could be interessting for ajax things.
@@ -120,7 +120,7 @@ class Controller
 	}
 
 	/**
-	 * Normal render 
+	 * Normal render
 	 * @param string $view
 	 */
 	public function renderAsHTML ($view = 'index')
@@ -129,10 +129,49 @@ class Controller
 		$templateEngine = TemplateEngine::getInstance();
 		$templateEngine->loadDesign();
 		$templateEngine->loadView( $routingEngine->controller,$routingEngine->action );
-		$templateEngine->setTitle($routingEngine->controller.' > '.$routingEngine->action);
+
+		if(!$templateEngine->isMarkSet('title')){
+			$templateEngine->setTitle($routingEngine->controller.' > '.$routingEngine->action);
+		}
+
 		$templateEngine->render($this);
 	}
-		
+
+	/**
+	 * Defines the Title tag
+	 * @param string $title
+	 */
+	public function setTitle ($title){
+
+		$templateEngine = TemplateEngine::getInstance();
+		$templateEngine->setTitle($title);
+		Log::getInstance()->event("Titel: ".$title,Log::INFO);
+
+	}
+
+	/**
+	 * Returns the value of the POST parameter.
+	 * @param string $parameterName
+	 */
+	public function post($parameterName){
+		return $_POST[$parameterName];
+	}
+
+	/**
+	 * Returns the value of the GET parameter.
+	 * @param string $parameterName
+	 */
+	public function get($parameterName){
+		 return $_GET[$parameterName];
+	}
+	
+	/**
+	 * Returns the value of the session variable 
+	 * @param string $parameterName
+	 */
+	public function session($parameterName){
+		return $_SESSION[$parameterName];
+	}
 }
 ###
 

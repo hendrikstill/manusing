@@ -10,10 +10,11 @@ class Log
 	const INFO = 'info';
 	const WARNING = 'warning';
 	const ERROR = 'error';
-	
+
 	const FILE = 'file';
 	const DISPLAY = 'display';
 	const DATABASE = 'database';
+	const FIREBUG = 'firebug';
 
 	#	internal variables
 
@@ -40,8 +41,7 @@ class Log
 	 * @param string $msg
 	 * @param LOG_LEVEL $type
 	 */
-	public function event ($msg,$type)
-	{
+	public function event ($msg,$type){
 		switch ( LOG_LEVEL )
 		{
 			case Log::INFO:
@@ -58,6 +58,20 @@ class Log
 		}
 	}
 
+	public function trace(){
+		
+		switch( LOG_TYPE ){
+			case Log::DISPLAY:
+				break;
+			case Log::FIREBUG:
+				$firephp = FirePHP::getInstance(true);
+				$firephp->trace("Manusing Trace");
+				break;
+				
+		}
+		
+	}
+
 	private function log($msg,$type){
 		switch ( LOG_TYPE )
 		{
@@ -70,6 +84,9 @@ class Log
 			case Log::DATABASE:
 				$this->logToDatabase($msg, $type);
 				break;
+			case Log::FIREBUG:
+				$this->logToFirebug($msg, $type);
+				break;
 
 		}
 	}
@@ -77,11 +94,24 @@ class Log
 	private function logToFile($msg,$type){
 			
 	}
+
 	private function logToDisplay($msg,$type){
 		echo "$type Log: $msg";
 	}
+
 	private function logToDatabase($msg,$type){
 		DataConnector::getInstance()->query("INSERT INTO log (id,time,type,message,url) VALUES  (NULL,NOW(),$type,$msg,".$_SERVER['REQUEST_URI'].")");
+	}
+
+	private function logToFirebug($msg,$type){
+		try{
+		$firephp = FirePHP::getInstance(true);
+		$firephp->setEnabled(true);
+		$firephp->log($msg,$type);
+		}catch(Exception $e){
+			
+		}
+
 	}
 
 }
